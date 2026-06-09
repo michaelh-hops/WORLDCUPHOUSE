@@ -240,6 +240,7 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0}
 // ─────────────────────────────────────────────────────────────
 const SB  = 'https://pkarngqaxrxkrwigrdsv.supabase.co';
 const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrYXJuZ3FheHJ4a3J3aWdyZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjc0MzgsImV4cCI6MjA5NjYwMzQzOH0.gdQLK5o6fFMUt1Zj27mOu8hPAyTTpEvYvS9Y3H-fnZs';
+const ADMIN_PW = 'wch2026';
 
 async function api(table, method='GET', body=null, qs=''){
   const r = await fetch(`${SB}/rest/v1/${table}${qs}`,{
@@ -385,6 +386,7 @@ function nav(id){
 
 async function renderPage(id){
   updateGBCountdown();
+  setInterval(updateGBCountdown, 1000);
   await reload();
   if(id==='home')  renderDash();
   if(id==='lb')    renderLB();
@@ -586,6 +588,7 @@ async function submitProps(matchId){
 // GOLDEN BOOT
 // ─────────────────────────────────────────────────────────────
 async function renderGB(){
+  updateGBCountdown();
   await reload();
   if(!ME){ document.getElementById('gb-mine').innerHTML='<div class="info-box">Join on the Home tab to make picks.</div>'; return; }
   const me = DB.players.find(p=>p.name===ME)||{};
@@ -772,11 +775,14 @@ function renderLB(){
 // ADMIN
 // ─────────────────────────────────────────────────────────────
 function checkAdmin(){
-  const pw = document.getElementById('admin-pw').value.trim();
-  if(pw===ADMIN_PW){
+  const pw = document.getElementById('admin-pw').value.trim().toLowerCase();
+  const correct = ADMIN_PW.trim().toLowerCase();
+  if(pw===correct){
     document.getElementById('admin-body').style.display='block';
     renderAdminContent();
-  } else { alert('Wrong password. Try: wch2026'); }
+  } else {
+    alert('Incorrect. Password is: wch2026');
+  }
 }
 
 function renderAdminContent(){
@@ -894,31 +900,38 @@ async function clearRes(mId){
   renderAdminContent();
 }
 
-// GB COUNTDOWN
+// GB COUNTDOWN — runs independently, no dependency on login state
 function updateGBCountdown(){
-  const lockTime = new Date('2026-06-14T15:00:00Z').getTime();
-  const now = Date.now();
   const el = document.getElementById('gb-countdown-box');
   if(!el) return;
+  const lockTime = new Date('2026-06-14T15:00:00Z').getTime();
+  const now = Date.now();
   if(now >= lockTime){
     el.innerHTML = '<div class="warn-box">🔒 Golden Boot picks are now locked.</div>';
     return;
   }
   const diff = lockTime - now;
-  const days  = Math.floor(diff / (1000*60*60*24));
-  const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
-  const mins  = Math.floor((diff % (1000*60*60)) / (1000*60));
-  const secs  = Math.floor((diff % (1000*60)) / 1000);
-  const urgent = diff < 3600000; // under 1 hour
-  el.innerHTML = `<div style="background:${urgent?'rgba(255,77,77,.1)':'rgba(245,200,66,.08)'};border:1px solid ${urgent?'rgba(255,77,77,.3)':'rgba(245,200,66,.25)'};border-radius:10px;padding:14px 16px;margin-bottom:14px;text-align:center">
-    <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.8px">⏳ Golden Boot Picks Lock In</div>
-    <div style="display:flex;justify-content:center;gap:16px">
-      ${[['Days',days],['Hours',hours],['Mins',mins],['Secs',secs]].map(([l,v])=>`
-      <div><div style="font-size:1.6rem;font-weight:800;color:${urgent?'var(--red)':'var(--gold)'}">${String(v).padStart(2,'0')}</div><div style="font-size:.7rem;color:var(--muted)">${l}</div></div>`).join('')}
+  const days  = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins  = Math.floor((diff % 3600000) / 60000);
+  const secs  = Math.floor((diff % 60000) / 1000);
+  const urgent = diff < 3600000;
+  const col = urgent ? 'var(--red)' : 'var(--gold)';
+  const bg  = urgent ? 'rgba(255,77,77,.1)' : 'rgba(245,200,66,.08)';
+  const br  = urgent ? 'rgba(255,77,77,.3)' : 'rgba(245,200,66,.25)';
+  el.innerHTML = `<div style="background:${bg};border:1px solid ${br};border-radius:10px;padding:14px 16px;text-align:center">
+    <div style="font-size:.76rem;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.8px">⏳ Golden Boot Picks Lock</div>
+    <div style="display:flex;justify-content:center;gap:18px;margin-bottom:8px">
+      ${[['Days',days],['Hrs',hours],['Min',mins],['Sec',secs]].map(([l,v])=>`<div>
+        <div style="font-size:1.7rem;font-weight:800;color:${col};line-height:1">${String(v).padStart(2,'0')}</div>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:3px">${l}</div>
+      </div>`).join('')}
     </div>
-    <div style="font-size:.78rem;color:var(--muted);margin-top:8px">Saturday June 14 · 7:00 AM PST</div>
+    <div style="font-size:.76rem;color:var(--muted)">Saturday June 14 · 7:00 AM PST</div>
   </div>`;
 }
+// Start countdown immediately and tick every second
+updateGBCountdown();
 setInterval(updateGBCountdown, 1000);
 // ─────────────────────────────────────────────────────────────
 (async()=>{
