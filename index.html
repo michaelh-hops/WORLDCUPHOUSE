@@ -384,6 +384,7 @@ function nav(id){
 }
 
 async function renderPage(id){
+  updateGBCountdown();
   await reload();
   if(id==='home')  renderDash();
   if(id==='lb')    renderLB();
@@ -771,10 +772,11 @@ function renderLB(){
 // ADMIN
 // ─────────────────────────────────────────────────────────────
 function checkAdmin(){
-  if(document.getElementById('admin-pw').value===ADMIN_PW){
+  const pw = document.getElementById('admin-pw').value.trim();
+  if(pw===ADMIN_PW){
     document.getElementById('admin-body').style.display='block';
     renderAdminContent();
-  } else { alert('Wrong password.'); }
+  } else { alert('Wrong password. Try: wch2026'); }
 }
 
 function renderAdminContent(){
@@ -892,8 +894,32 @@ async function clearRes(mId){
   renderAdminContent();
 }
 
-// ─────────────────────────────────────────────────────────────
-// INIT
+// GB COUNTDOWN
+function updateGBCountdown(){
+  const lockTime = new Date('2026-06-14T15:00:00Z').getTime();
+  const now = Date.now();
+  const el = document.getElementById('gb-countdown-box');
+  if(!el) return;
+  if(now >= lockTime){
+    el.innerHTML = '<div class="warn-box">🔒 Golden Boot picks are now locked.</div>';
+    return;
+  }
+  const diff = lockTime - now;
+  const days  = Math.floor(diff / (1000*60*60*24));
+  const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+  const mins  = Math.floor((diff % (1000*60*60)) / (1000*60));
+  const secs  = Math.floor((diff % (1000*60)) / 1000);
+  const urgent = diff < 3600000; // under 1 hour
+  el.innerHTML = `<div style="background:${urgent?'rgba(255,77,77,.1)':'rgba(245,200,66,.08)'};border:1px solid ${urgent?'rgba(255,77,77,.3)':'rgba(245,200,66,.25)'};border-radius:10px;padding:14px 16px;margin-bottom:14px;text-align:center">
+    <div style="font-size:.78rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.8px">⏳ Golden Boot Picks Lock In</div>
+    <div style="display:flex;justify-content:center;gap:16px">
+      ${[['Days',days],['Hours',hours],['Mins',mins],['Secs',secs]].map(([l,v])=>`
+      <div><div style="font-size:1.6rem;font-weight:800;color:${urgent?'var(--red)':'var(--gold)'}">${String(v).padStart(2,'0')}</div><div style="font-size:.7rem;color:var(--muted)">${l}</div></div>`).join('')}
+    </div>
+    <div style="font-size:.78rem;color:var(--muted);margin-top:8px">Saturday June 14 · 7:00 AM PST</div>
+  </div>`;
+}
+setInterval(updateGBCountdown, 1000);
 // ─────────────────────────────────────────────────────────────
 (async()=>{
   await reload();
