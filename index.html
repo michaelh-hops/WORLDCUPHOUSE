@@ -229,6 +229,10 @@ hr{border:none;border-top:1px solid var(--border);margin:16px 0}
     </div>
   </div>
   <div id="admin-body" style="display:none">
+    <div class="card">
+      <h2>👥 Manage Players</h2>
+      <div id="adm-players"></div>
+    </div>
     <div class="card"><h2>👟 Golden Boot Goals</h2><div id="adm-gb"></div></div>
     <div id="adm-matches"></div>
   </div>
@@ -519,9 +523,11 @@ function renderDayProps(day){
       // MY PICKS + SCORING
       const props = myPick.props||{};
       const pts = scored ? calcMatchPts(ME, m.id) : null;
+      const editing = !locked && !scored;
       html += `<div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <span class="badge badge-green">✓ Picks submitted</span>
         ${pts!==null ? `<span class="badge badge-gold">+${pts} point${pts!==1?'s':''} this game</span>` : ''}
+        ${editing ? `<button class="btn btn-outline btn-sm" onclick="editPicks('${m.id}')">✏️ Edit Picks</button>` : ''}
       </div>`;
       PROPS.forEach(p=>{
         const v = props[p.id]||'—';
@@ -564,6 +570,13 @@ function sel(id, opts){
 function playerSel(id, squad, extra){
   const ex = extra ? `<option>${extra}</option>` : '';
   return `<select id="${id}"><option value="">— pick —</option>${ex}${squad.map(p=>`<option>${p}</option>`).join('')}</select>`;
+}
+
+async function editPicks(matchId){
+  // Remove pick from DB so the form re-renders
+  await api('picks','DELETE',null,`?player_name=eq.${encodeURIComponent(ME)}&match_id=eq.${matchId}`);
+  await reload();
+  renderProps();
 }
 
 async function submitProps(matchId){
@@ -744,6 +757,74 @@ function scoreGB(user){
 function scoreTotal(user){ return Math.round((scoreProps(user)+scoreGB(user))*10)/10; }
 
 // ─────────────────────────────────────────────────────────────
+// SCORE BREAKDOWN MODAL
+// ─────────────────────────────────────────────────────────────
+function showBreakdown(user){
+  const scored = DB.results.filter(r=>r.scored);
+  if(!scored.length){ alert('No scored games yet.'); return; }
+
+  let html = `<div id="breakdown-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;overflow-y:auto;padding:20px">
+    <div style="max-width:600px;margin:0 auto;background:var(--card);border-radius:14px;border:1px solid var(--border);overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)">
+        <div style="font-weight:800;font-size:1.05rem">${user} — Score Breakdown</div>
+        <button onclick="document.getElementById('breakdown-modal').remove()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">✕</button>
+      </div>`;
+
+  let grandTotal = 0;
+  const playerPicks = DB.picks.filter(p=>p.player_name===user);
+
+  MATCHES.forEach(m=>{
+    const res = DB.results.find(r=>r.match_id===m.id);
+    if(!res?.scored) return;
+    const pick = playerPicks.find(p=>p.match_id===m.id);
+    const pts = calcMatchPts(user, m.id);
+    grandTotal += pts;
+    const total = PROPS.length;
+
+    html += `<div style="padding:14px 20px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-weight:700;font-size:.9rem">${m.h} vs ${m.a}</div>
+        <span class="badge ${pts>0?'badge-gold':'badge-muted'}">${pts}/${total} pts</span>
+      </div>`;
+
+    if(!pick){
+      html += `<div style="font-size:.8rem;color:var(--muted)">No picks submitted</div>`;
+    } else {
+      PROPS.forEach(p=>{
+        const v = (pick.props||{})[p.id]||'—';
+        const ans = res.answers?.[p.id]||'';
+        const isRight = ans && v.toLowerCase().trim()===ans.toLowerCase().trim();
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(42,53,80,.5);font-size:.78rem">
+          <span style="color:var(--muted);flex:1">${p.label}</span>
+          <span style="color:${isRight?'var(--green)':'var(--red)'};font-weight:600;margin:0 10px">${v}</span>
+          <span style="color:var(--muted);font-size:.72rem">${isRight?'✓':'✗ '+ans}</span>
+        </div>`;
+      });
+    }
+    html += `</div>`;
+  });
+
+  const gbPts = scoreGB(user);
+  html += `<div style="padding:16px 20px;background:var(--card2)">
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:.88rem">
+      <span style="color:var(--muted)">Props Total</span>
+      <span style="font-weight:700;color:var(--blue)">${grandTotal} pts</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:.88rem">
+      <span style="color:var(--muted)">Golden Boot Total</span>
+      <span style="font-weight:700;color:var(--green)">${gbPts} pts</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:1rem;border-top:1px solid var(--border);padding-top:10px">
+      <span style="font-weight:700">Total Score</span>
+      <span style="font-weight:800;color:var(--gold)">${scoreTotal(user)} pts</span>
+    </div>
+  </div>
+  </div></div>`;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+// ─────────────────────────────────────────────────────────────
 // LEADERBOARD
 // ─────────────────────────────────────────────────────────────
 function renderLB(){
@@ -753,13 +834,14 @@ function renderLB(){
 
   const ri=['🥇','🥈','🥉'];
   document.getElementById('lb-main').innerHTML = list.length
-    ? list.map((p,i)=>`<div class="lb-row">
+    ? list.map((p,i)=>`<div class="lb-row" style="cursor:pointer" onclick="showBreakdown('${p.name}')">
         <div class="lb-rank ${i<3?'r'+(i+1):''}">${ri[i]||(i+1)}</div>
         <div class="lb-name">${p.name}${p.name===ME?' <span style="font-size:.7rem;color:var(--muted)">(you)</span>':''}</div>
         <div style="text-align:right">
           <div class="lb-pts">${p.total}</div>
           <div class="lb-sub">Props: ${p.props} · GB: ${p.gb}</div>
         </div>
+        <div style="color:var(--muted);font-size:.8rem">›</div>
       </div>`).join('')
     : '<div class="empty">No players yet.</div>';
 
@@ -784,7 +866,29 @@ function checkAdmin(){
   }
 }
 
-function renderAdminContent(){
+async function deletePlayer(name){
+  if(!confirm(`Delete ${name} and all their picks? This cannot be undone.`)) return;
+  await api('players','DELETE',null,`?name=eq.${encodeURIComponent(name)}`);
+  await api('picks','DELETE',null,`?player_name=eq.${encodeURIComponent(name)}`);
+  await reload();
+  renderAdminContent();
+  alert(`${name} deleted.`);
+}
+
+function renderAdminPlayers(){
+  if(!DB.players.length){
+    document.getElementById('adm-players').innerHTML='<div style="color:var(--muted);font-size:.85rem">No players yet.</div>';
+    return;
+  }
+  document.getElementById('adm-players').innerHTML = DB.players.map(p=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-weight:600;font-size:.88rem">${p.name}</div>
+        <div style="font-size:.73rem;color:var(--muted);margin-top:2px">GB picks: ${(p.gb_picks||[]).join(', ')||'none'}</div>
+      </div>
+      <button class="btn btn-red btn-sm" onclick="deletePlayer('${p.name}')">Delete</button>
+    </div>`).join('');
+}
   if(document.getElementById('admin-body').style.display==='none') return;
   // GB
   let gbHtml = '<div class="info-box">Enter cumulative goals for each player. Multipliers apply automatically to scoring.</div>';
