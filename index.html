@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup House 🏆</title>
+<style>
+:root{
+  --bg:#0a0e1a;--card:#131929;--card2:#1a2235;--border:#2a3550;
+  --gold:#f5c842;--green:#00c97a;--red:#ff4d4d;--blue:#4d9fff;
+  --text:#e8eaf0;--muted:#8892a4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;font-size:15px}
+
+/* HEADER */
+header{background:linear-gradient(135deg,#1a0533,#0d1f3c 50%,#0a1628);padding:20px 16px 16px;text-align:center;border-bottom:2px solid var(--gold)}
+header h1{font-size:1.9rem;font-weight:800;color:var(--gold);letter-spacing:2px;text-shadow:0 0 24px rgba(245,200,66,.45)}
+header p{color:var(--muted);font-size:.82rem;margin-top:5px}
+
+/* NAV */
+nav{display:flex;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav button{flex:1;min-width:80px;padding:14px 6px;background:none;border:none;color:var(--muted);font-size:.72rem;font-weight:700;cursor:pointer;letter-spacing:.5px;text-transform:uppercase;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap}
+nav button.active{color:var(--gold);border-bottom-color:var(--gold);background:rgba(245,200,66,.06)}
+nav button:hover:not(.active){color:var(--text)}
+
+/* PAGES */
+.page{display:none;padding:20px 16px;max-width:860px;margin:0 auto}
+.page.active{display:block}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.card h2{font-size:.82rem;color:var(--gold);margin-bottom:16px;text-transform:uppercase;letter-spacing:1.2px;font-weight:700}
+
+/* INPUTS */
+input,select,textarea{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:9px;font-size:.88rem;width:100%;outline:none;transition:border-color .2s}
+input:focus,select:focus{border-color:var(--gold)}
+input::placeholder{color:var(--muted)}
+label{font-size:.78rem;color:var(--muted);margin-bottom:6px;display:block;font-weight:500}
+.form-row{margin-bottom:14px}
+select option{background:#131929}
+
+/* BUTTONS */
+.btn{padding:11px 20px;border-radius:9px;border:none;font-weight:700;cursor:pointer;font-size:.85rem;transition:all .2s;letter-spacing:.3px}
+.btn-gold{background:var(--gold);color:#0a0e1a}
+.btn-gold:hover{background:#ffd700;transform:translateY(-1px);box-shadow:0 4px 14px rgba(245,200,66,.3)}
+.btn-green{background:var(--green);color:#0a0e1a}
+.btn-green:hover{background:#00e589}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm{padding:6px 13px;font-size:.76rem}
+.btn-red{background:var(--red);color:#fff}
+
+/* INFO BOXES */
+.info-box{background:rgba(77,159,255,.08);border:1px solid rgba(77,159,255,.25);border-radius:10px;padding:13px 16px;font-size:.82rem;color:var(--blue);margin-bottom:16px;line-height:1.5}
+.warn-box{background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.25);border-radius:10px;padding:13px 16px;font-size:.82rem;color:var(--gold);margin-bottom:16px;line-height:1.5}
+.success-box{background:rgba(0,201,122,.08);border:1px solid rgba(0,201,122,.25);border-radius:10px;padding:13px 16px;font-size:.82rem;color:var(--green);margin-bottom:16px;line-height:1.5}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:.7rem;font-weight:700;line-height:1.4}
+.badge-gold{background:rgba(245,200,66,.15);color:var(--gold)}
+.badge-green{background:rgba(0,201,122,.15);color:var(--green)}
+.badge-blue{background:rgba(77,159,255,.15);color:var(--blue)}
+.badge-red{background:rgba(255,77,77,.15);color:var(--red)}
+.badge-muted{background:rgba(136,146,164,.12);color:var(--muted)}
+
+/* LEADERBOARD */
+.lb-row{display:flex;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border);gap:12px}
+.lb-row:last-child{border-bottom:none}
+.lb-rank{font-size:1.15rem;font-weight:800;width:34px;text-align:center;flex-shrink:0}
+.lb-rank.r1{color:var(--gold)}.lb-rank.r2{color:#c0c0c0}.lb-rank.r3{color:#cd7f32}
+.lb-name{flex:1;font-weight:600;font-size:.92rem}
+.lb-pts{font-size:1.1rem;font-weight:800;color:var(--gold);flex-shrink:0}
+.lb-sub{font-size:.72rem;color:var(--muted);margin-top:2px}
+
+/* MATCH STATUS */
+.match-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:10px;flex-wrap:wrap}
+.match-title{font-size:1.05rem;font-weight:700;line-height:1.3}
+.match-time{font-size:.75rem;color:var(--muted);margin-top:4px}
+.match-status{font-size:.72rem;padding:4px 11px;border-radius:20px;font-weight:700;flex-shrink:0;margin-top:2px}
+.status-open{background:rgba(0,201,122,.15);color:var(--green)}
+.status-locked{background:rgba(255,77,77,.15);color:var(--red)}
+.status-scored{background:rgba(245,200,66,.15);color:var(--gold)}
+
+/* PROPS */
+.prop-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);gap:12px}
+.prop-row:last-child{border-bottom:none}
+.prop-q{font-size:.84rem;color:var(--text);line-height:1.4;flex:1;padding-right:8px}
+.prop-sel{width:190px;flex-shrink:0}
+@media(max-width:580px){.prop-row{flex-direction:column;align-items:stretch}.prop-sel{width:100%}}
+
+/* DAY TABS */
+.subtabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.subtab{padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);font-size:.78rem;cursor:pointer;font-weight:600;transition:all .2s}
+.subtab.active{background:var(--gold);color:#0a0e1a;border-color:var(--gold)}
+.subtab:hover:not(.active){border-color:var(--text);color:var(--text)}
+
+/* GOLDEN BOOT */
+.gb-row{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;background:var(--card2);border-radius:10px;margin-bottom:9px;gap:12px}
+.gb-row-left{flex:1;min-width:0}
+.gb-name{font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gb-team{font-size:.73rem;color:var(--muted);margin-top:2px}
+.gb-mult{font-size:.72rem;color:var(--gold);background:rgba(245,200,66,.12);padding:3px 9px;border-radius:12px;font-weight:700;flex-shrink:0}
+.gb-goals{font-size:1.1rem;font-weight:800;color:var(--green);flex-shrink:0}
+.gb-pts-sub{font-size:.73rem;color:var(--muted);text-align:right}
+
+/* DIVIDER */
+hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+
+/* RESULT ROW */
+.res-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.res-row:last-child{border-bottom:none}
+.res-label{flex:1;font-size:.81rem;color:var(--text);min-width:140px}
+.res-input{width:180px;flex-shrink:0}
+@media(max-width:580px){.res-row{flex-direction:column;align-items:stretch}.res-input{width:100%}}
+
+/* SPINNER */
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading{color:var(--muted);padding:32px;text-align:center;font-size:.88rem}
+
+/* JOIN */
+.join-wrap{max-width:400px;margin:48px auto;text-align:center;padding:0 8px}
+.join-wrap .icon{font-size:3.2rem;margin-bottom:10px}
+.join-wrap h2{font-size:1.55rem;color:var(--gold);margin-bottom:8px;font-weight:800}
+.join-wrap p{color:var(--muted);margin-bottom:24px;font-size:.88rem;line-height:1.6}
+
+/* URL ROW */
+.url-row{display:flex;gap:8px}
+.url-row input{flex:1}
+
+/* OTHER PICKS */
+.other-pick-card{background:var(--card2);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.other-pick-name{font-weight:700;font-size:.87rem;margin-bottom:8px;color:var(--text)}
+.other-pick-row{display:flex;justify-content:space-between;font-size:.77rem;padding:3px 0;border-bottom:1px solid rgba(42,53,80,.6)}
+.other-pick-row:last-child{border-bottom:none}
+.other-pick-label{color:var(--muted)}
+.other-pick-val{color:var(--text);font-weight:500;text-align:right;margin-left:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚽ WORLD CUP HOUSE</h1>
+  <p id="hdr-sub">2026 FIFA World Cup Challenge</p>
+</header>
+
+<nav>
+  <button class="active" onclick="nav('home')">🏠 Home</button>
+  <button onclick="nav('lb')">🏆 Standings</button>
+  <button onclick="nav('props')">🎯 Props</button>
+  <button onclick="nav('gb')">👟 Boot</button>
+  <button onclick="nav('admin')">⚙️ Admin</button>
+</nav>
+
+<!-- HOME -->
+<div id="pg-home" class="page active">
+  <div id="join-section">
+    <div class="join-wrap">
+      <div class="icon">⚽</div>
+      <h2>World Cup House</h2>
+      <p>Enter your name to join the group. All picks and scores are shared live — everyone sees the same leaderboard.</p>
+      <div class="form-row">
+        <input type="text" id="join-input" placeholder="Your name..." maxlength="24" style="text-align:center;font-size:1rem;padding:13px" onkeydown="if(event.key==='Enter')joinGame()">
+      </div>
+      <button class="btn btn-gold" style="width:100%;padding:13px;font-size:.95rem" onclick="joinGame()">Join World Cup House →</button>
+      <p style="margin-top:16px;font-size:.77rem;color:var(--muted)">Already joined? <span style="color:var(--gold);cursor:pointer;text-decoration:underline" onclick="returnUser()">Return here</span></p>
+    </div>
+  </div>
+  <div id="dash-section" style="display:none">
+    <div class="card">
+      <h2>👋 Welcome back</h2>
+      <div style="font-size:1.25rem;font-weight:700;margin-bottom:14px" id="dash-name-display"></div>
+      <div id="dash-stats"></div>
+    </div>
+    <div class="card">
+      <h2>📅 Weekend Matches</h2>
+      <div id="dash-matches"></div>
+    </div>
+    <div class="info-box">
+      🔒 <strong>Golden Boot picks lock Saturday Jun 14 at 7:00 AM PST.</strong><br>
+      Props lock at kickoff time for each individual game.
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div id="pg-lb" class="page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div style="font-size:1rem;font-weight:700;color:var(--gold)">🏆 Live Standings</div>
+    <button class="btn btn-outline btn-sm" onclick="nav('lb')">↻ Refresh</button>
+  </div>
+  <div class="card"><div id="lb-main"><div class="loading"><span class="spin"></span>Loading...</div></div></div>
+  <div class="grid2">
+    <div class="card"><h2>🎯 Props Leaders</h2><div id="lb-props"><div class="loading">...</div></div></div>
+    <div class="card"><h2>👟 Golden Boot Leaders</h2><div id="lb-gb"><div class="loading">...</div></div></div>
+  </div>
+</div>
+
+<!-- PROPS -->
+<div id="pg-props" class="page">
+  <div class="warn-box">Props lock at kickoff for each game. Once you submit, you can see everyone else's picks for that game.</div>
+  <div class="subtabs" id="day-tabs"></div>
+  <div id="props-body"></div>
+</div>
+
+<!-- GOLDEN BOOT -->
+<div id="pg-gb" class="page">
+  <div class="info-box">
+    Pick <strong>4 players</strong> you think will score the most goals. Underdogs earn bigger multipliers based on pre-tournament betting odds. Scoring runs through end of the group stage.
+  </div>
+  <div class="card"><h2>👟 Your Picks</h2><div id="gb-mine"></div></div>
+  <div class="card"><h2>📊 Live Goal Tracker</h2><div id="gb-tracker"></div></div>
+  <div class="card"><h2>👥 Everyone's Picks</h2><div id="gb-all"></div></div>
+</div>
+
+<!-- ADMIN -->
+<div id="pg-admin" class="page">
+  <div class="warn-box">⚙️ Admin panel — enter results after each game to score props and update the leaderboard.</div>
+  <div class="card">
+    <h2>🔑 Admin Access</h2>
+    <div style="display:flex;gap:10px">
+      <input type="password" id="admin-pw" placeholder="Admin password..." style="flex:1" onkeydown="if(event.key==='Enter')checkAdmin()">
+      <button class="btn btn-gold" onclick="checkAdmin()">Unlock</button>
+    </div>
+  </div>
+  <div id="admin-body" style="display:none">
+    <div class="card"><h2>👟 Golden Boot Goals</h2><div id="adm-gb"></div></div>
+    <div id="adm-matches"></div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// SUPABASE
+// ─────────────────────────────────────────────────────────────
+const SB  = 'https://pkarngqaxrxkrwigrdsv.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrYXJuZ3FheHJ4a3J3aWdyZHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjc0MzgsImV4cCI6MjA5NjYwMzQzOH0.gdQLK5o6fFMUt1Zj27mOu8hPAyTTpEvYvS9Y3H-fnZs';
+
+async function api(table, method='GET', body=null, qs=''){
+  const r = await fetch(`${SB}/rest/v1/${table}${qs}`,{
+    method,
+    headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+KEY,'Prefer':'return=representation'},
+    body: body ? JSON.stringify(body) : null
+  });
+  if(!r.ok){ console.error(table,method,await r.text()); return null; }
+  const t = await r.text();
+  try{ return t ? JSON.parse(t) : []; }catch{ return []; }
+}
+const GET    = (t,q)   => api(t,'GET',null,q||'?select=*');
+const POST   = (t,b)   => api(t,'POST',b);
+const PATCH  = (t,b,q) => api(t,'PATCH',b,q);
+
+// ─────────────────────────────────────────────────────────────
+// STATIC DATA
+// ─────────────────────────────────────────────────────────────
+const GB_LIST = [
+  {n:"Kylian Mbappé",     t:"France",    m:1.0},
+  {n:"Harry Kane",        t:"England",   m:1.1},
+  {n:"Lionel Messi",      t:"Argentina", m:1.9},
+  {n:"Erling Haaland",    t:"Norway",    m:2.1},
+  {n:"Lamine Yamal",      t:"Spain",     m:2.7},
+  {n:"Mikel Oyarzabal",   t:"Spain",     m:2.7},
+  {n:"Cristiano Ronaldo", t:"Portugal",  m:3.0},
+  {n:"Vinicius Jr",       t:"Brazil",    m:3.3},
+  {n:"Lautaro Martinez",  t:"Argentina", m:3.7},
+  {n:"Ousmane Dembélé",   t:"France",    m:4.2},
+  {n:"Romelu Lukaku",     t:"Belgium",   m:4.5},
+  {n:"Raphinha",          t:"Brazil",    m:4.5},
+  {n:"Julián Alvarez",    t:"Argentina", m:5.0},
+  {n:"Richarlison",       t:"Brazil",    m:5.0},
+  {n:"Cody Gakpo",        t:"Netherlands",m:5.5},
+  {n:"Jonathan David",    t:"Canada",    m:6.0},
+  {n:"Bukayo Saka",       t:"England",   m:6.5},
+  {n:"Memphis Depay",     t:"Netherlands",m:6.5},
+  {n:"Antoine Griezmann", t:"France",    m:7.0},
+  {n:"Ayoub El Kaabi",    t:"Morocco",   m:7.5},
+  {n:"Santiago Gimenez",  t:"Mexico",    m:7.5},
+  {n:"Ferran Torres",     t:"Spain",     m:8.0},
+  {n:"Patrik Schick",     t:"Czechia",   m:8.5},
+  {n:"Scott McTominay",   t:"Scotland",  m:9.0},
+  {n:"Endrick",           t:"Brazil",    m:9.0},
+  {n:"Son Heung-min",     t:"South Korea",m:9.0},
+  {n:"Neymar",            t:"Brazil",    m:10.0},
+  {n:"Alphonso Davies",   t:"Canada",    m:11.0},
+  {n:"Edin Dzeko",        t:"Bosnia",    m:12.0},
+];
+
+const SQ = {
+  "South Korea":["Son Heung-min","Cho Gue-sung","Oh Hyeon-gyu","Hwang Hee-chan","Lee Kang-in","Yang Hyun-jun","Bae Jun-ho","Hwang In-beom","Lee Jae-sung","Kim Min-jae","Cho Yu-min","Lee Tae-seok","Kim Moon-hwan","Park Jin-seob","Paik Seung-ho","Kim Jin-gyu","Lee Dong-gyeong","Eom Ji-Sung","Seol Young-woo","Lee Ki-hyuk","Lee Han-beom","Jens Castrop","Kim Tae-hyeon"],
+  "Czechia":["Patrik Schick","Adam Hlozek","Jan Kuchta","Mojmir Chytil","Tomas Chory","Tomas Soucek","Vladimir Darida","Lukas Provod","Michal Sadilek","Pavel Sulc","Lukas Serv","Hugo Sochurek","Alexandr Sojka","Denis Visinsky","Vladimir Coufal","Tomas Holes","Ladislav Krejcki","David Zima","Jaroslav Zeleny","David Jurasek","David Doudera","Robin Hranec","Stepan Chaloupek"],
+  "Canada":["Jonathan David","Cyle Larin","Tani Oluwaseyi","Promise David","Alphonso Davies","Tajon Buchanan","Liam Millar","Jacob Schaffelburg","Mathieu Choiniere","Stephen Eustaquio","Ismael Kone","Ali Ahmed","Jonathan Osorio","Nathan Saliba","Alistair Johnston","Luc de Fougerolles","Alfie Jones","Joel Waterman","Derek Cornelius","Moise Bombito","Richie Laryea","Niko Sigur"],
+  "Bosnia":["Edin Dzeko","Ermedin Demirovic","Samed Bazdar","Haris Tabakovic","Jovo Lukic","Amir Hadziahmetovic","Benjamin Tahirovic","Armin Gigovic","Dzenis Burnic","Ivan Basic","Esmir Bajraktarevic","Amar Memic","Ivan Sunjic","Kerim Alajbegovic","Ermin Mahmic","Sead Kolasinac","Dennis Hadzikadunic","Amar Dedic","Nikola Katic","Tarik Muharemovic","Nihad Mujakic","Stjepan Radeljic","Nidal Celik"],
+  "USA":["Christian Pulisic","Gio Reyna","Brenden Aaronson","Tim Weah","Josh Sargent","Ricardo Pepi","Folarin Balogun","Weston McKennie","Tyler Adams","Yunus Musah","Luca de la Torre","Johnny Cardoso","Sergiño Dest","Antonee Robinson","Joe Scally","Miles Robinson","Chris Richards","Tim Ream","Walker Zimmermann","Caleb Wiley","Matt Turner","Zack Steffen"],
+  "Paraguay":["Antonio Sanabria","Kaku","Alex Arce","Julio Enciso","Gabriel Avalos","Isidro Pitta","Miguel Almiron","Diego Gomez","Ramon Sosa","Andres Cubas","Damian Bobadilla","Braian Ojeda","Matias Galarza","Gustavo Caballero","Mauricio","Gustavo Velazquez","Omar Alderete","Juan Jose Caceres","Fabian Balbuena","Junior Alonso","Jose Canale","Gustavo Gomez","Alexandro Maidana"],
+  "Qatar":["Akram Afif","Almoez Ali","Edmilson Junior","Mohammed Muntari","Hassan Al-Haydos","Ahmed Alaaeldin","Yusuf Abdurisag","Tahsin Jamshid","Mohamed Al-Mannai","Abdulaziz Hatem","Karim Boudiaf","Ahmed Al-Ganehi","Ahmed Fathy","Assim Madibo","Pedro Miguel","Lucas Mendes","Issa Laye","Jassem Gaber","Ayoub Al-Oui","Homam Ahmed","Boualem Khoukhi","Sultan Al-Brake","Al-Hashmi Al-Hussain"],
+  "Switzerland":["Breel Embolo","Zeki Amdouni","Noah Okafor","Dan Ndoye","Cedric Itten","Ruben Vargas","Granit Xhaka","Remo Freuler","Djibril Sow","Ardon Jashari","Michel Aebischer","Christian Fassnacht","Fabian Rieder","Johan Manzambi","Denis Zakaria","Manuel Akanji","Nico Elvedi","Ricardo Rodriguez","Silvan Widmer","Eray Comert","Luca Jaquez","Miro Muheim","Aurele Amenda"],
+  "Brazil":["Vinicius Jr","Raphinha","Neymar","Endrick","Gabriel Martinelli","Matheus Cunha","Luiz Henrique","Igor Thiago","Rayan","Lucas Paqueta","Bruno Guimaraes","Casemiro","Fabinho","Danilo Santos","Marquinhos","Gabriel Magalhaes","Bremer","Danilo Luiz","Alex Sandro","Wesley","Roger Ibanez","Douglas Santos","Leo Pereira"],
+  "Morocco":["Brahim Diaz","Ayoub El Kaabi","Soufiane Rahimi","Abde Ezzalzouli","Chemsdine Talbi","Gessime Yassine","Ayoube Amaimouni","Achraf Hakimi","Sofyan Amrabat","Azzedine Ounahi","Bilal El Khannouss","Ismael Saibari","Neil El Aynaoui","Samir El Mourabet","Ayyoub Bouaddi","Nayef Aguerd","Noussair Mazraoui","Youssef Belammari","Anass Salah-Eddine","Chadi Riad","Issa Diop","Zakaria El Ouahdi","Redouane Halhal"],
+  "Haiti":["Duckens Nazon","Frantzdy Pierrot","Derrick Etienne Jr","Wilson Isidor","Yassin Fortune","Ruben Providence","Josue Casimir","Louicius Deedson","Lenny Joseph","Jean-Ricner Bellegarde","Leverton Pierre","Danley Jean Jacques","Carl Sainte","Woodensky Pierre","Dominique Simon","Ricardo Ade","Carlens Arcus","Martin Experience","Jean-Kevin Duverne","Duke Lacroix","Wilguens Paugain","Hannes Delcroix","Keeto Thermoncy"],
+  "Scotland":["Lawrence Shankland","Che Adams","Ross Stewart","Lyndon Dykes","George Hirst","Scott McTominay","John McGinn","Kenny McLean","Lewis Ferguson","Ryan Christie","Findlay Curtis","Ben Gannon-Doak","Tyler Fletcher","Andy Robertson","Kieran Tierney","Anthony Ralston","John Souttar","Scott McKenna","Jack Hendry","Aaron Hickey","Nathan Patterson","Grant Hanley","Dominic Hyam"],
+  "Australia":["Mathew Leckie","Awer Mabil","Nestory Irankunda","Tete Yengi","Cristian Volpato","Mohamed Toure","Nishan Velupillay","Jackson Irvine","Ajdin Hrustic","Connor Metcalfe","Aiden O'Neill","Paul Okon-Engstler","Cammy Devlin","Aziz Behich","Milos Degenek","Harry Souttar","Jordan Bos","Cameron Burgess","Jason Geria","Alessandro Circati","Kai Trewin","Jacob Italiano","Lucas Herrington"],
+  "Turkiye":["Arda Guler","Kerem Akturkoglu","Baris Alper Yilmaz","Hakan Calhanoglu","Yunus Akgun","Irfan Can Kahveci","Cengiz Under","Salih Ozcan","Kaan Ayhan","Samet Akaydin","Merih Demiral","Zeki Celik","Mert Muldur","Abdulkerim Bardakci","Ozan Kabak","Ferdi Kadioglu","Umut Meras","Ridvan Yilmaz","Cenk Tosun"],
+  "Germany":["Kai Havertz","Florian Wirtz","Jamal Musiala","Leroy Sane","Thomas Muller","Niclas Fullkrug","Deniz Undav","Joshua Kimmich","Toni Kroos","Ilkay Gundogan","Robert Andrich","Pascal Gross","Leon Goretzka","Antonio Rudiger","Niklas Sule","Jonathan Tah","David Raum","Maximilian Mittelstadt","Benjamin Henrichs","Nico Schlotterbeck","Robin Koch","Waldemar Anton"],
+  "Curacao":["Leandro Bacuna","Jurickson Profar","Elson Hooi","Gilson Tavares","Rubio Rubin","Vurnon Anita","Rangelo Janga","Gaston Druijf","Gino van Kessel","Damil Dankerlui","Terrence Boyd","Elmo Ligeon","Hensley Herrerias","Remy Amador","Derio Isenia","Richell Marshall","Shurandy Sambo"],
+  "Netherlands":["Virgil van Dijk","Matthijs de Ligt","Nathan Ake","Denzel Dumfries","Jurrien Timber","Stefan de Vrij","Frenkie de Jong","Tijjani Reijnders","Teun Koopmeiners","Marten de Roon","Ryan Gravenberch","Memphis Depay","Cody Gakpo","Steven Bergwijn","Donyell Malen","Brian Brobbey","Wout Weghorst","Xavi Simons"],
+  "Japan":["Ritsu Doan","Kaoru Mitoma","Junya Ito","Daichi Kamada","Takumi Minamino","Ayase Ueda","Ao Tanaka","Wataru Endo","Hidemasa Morita","Takehiro Tomiyasu","Hiroki Ito","Ko Itakura","Maya Yoshida","Yukinari Sugawara","Shogo Taniguchi","Mao Hosoya","Keito Nakamura","Koki Ogawa"],
+  "Ivory Coast":["Sebastien Haller","Nicolas Pepe","Wilfried Zaha","Jonathan Bamba","Franck Kessie","Ibrahim Sangare","Cheick Doucoure","Seko Fofana","Serge Aurier","Eric Bailly","Odilon Kossounou","Willy Boly","Simon Adingra","Maxwel Cornet","Amad Diallo","Jeremie Boga","Stephy Mavididi"],
+  "Ecuador":["Enner Valencia","Michael Estrada","Jeremy Sarmiento","Gonzalo Plata","Pervis Estupinan","Angelo Preciado","Piero Hincapie","Felix Torres","William Pacho","Robert Arboleda","Jackson Porozo","Jose Cifuentes","Moises Caicedo","Jhegson Mendez","Carlos Gruezo","Romario Ibarra","Byron Castillo","Jordan Rezabala","Djorkaeff Reasco"],
+  "Sweden":["Alexander Isak","Viktor Gyokeres","Emil Forsberg","Dejan Kulusevski","Robin Quaison","Isak Hien","Ludwig Augustinsson","Victor Lindelof","Marcus Danielson","Filip Helander","Emil Krafth","Carl Starfelt","Mattias Svanberg","Viktor Claesson","Sebastian Larsson","Jesper Karlsson"],
+  "Tunisia":["Youssef Msakni","Wahbi Khazri","Seifeddine Jaziri","Naim Sliti","Dylan Bronn","Hannibal Mejbri","Ellyes Skhiri","Mohamed Ben Romdhane","Aissa Laidouni","Ali Maaloul","Montassar Talbi","Bilel Ifa","Wajdi Kechrida","Nader Ghandri","Yassine Meriah","Firas Ben Larbi","Saif-Eddine Khaoui"],
+  "Spain":["Alvaro Morata","Mikel Oyarzabal","Lamine Yamal","Nico Williams","Ferran Torres","Dani Olmo","Pedri","Fabian Ruiz","Rodri","Marcos Llorente","Gavi","Martin Zubimendi","Dani Carvajal","Aymeric Laporte","Robin Le Normand","Pau Cubarsi","Alex Grimaldo","Marc Cucurella","Nacho Fernandez","Jesus Navas"],
+  "Cape Verde":["Ryan Mendes","Gilson Tavares","Julio Tavares","Garry Rodrigues","Stopira","Fernando Varela","Rocha","Steven Fortes","Vozinha","Diney","Jeffry Fortes","Metinho","Kenny Rocha","Patrick Andrade","Marco Soares","David Tavares","Steven Vitoria"],
+  "Belgium":["Romelu Lukaku","Dries Mertens","Loïs Openda","Jeremy Doku","Leandro Trossard","Yannick Carrasco","Kevin De Bruyne","Axel Witsel","Amadou Onana","Youri Tielemans","Arthur Theate","Wout Faes","Jan Vertonghen","Toby Alderweireld","Thomas Meunier","Timothy Castagne","Zeno Debast","Noa Lang","Johan Bakayoko"],
+  "Egypt":["Mohamed Salah","Omar Marmoush","Mostafa Mohamed","Mohamed Elneny","Trezeguet","Ramadan Sobhi","Hamdi Fathy","Amr El Sulaya","Mahmoud Hamdy El-Wensh","Ahmed Hegazi","Omar Kamal","Karim Hafez","Ahmed Sayed Zizo","Marwan Hamdy","Akram Tawfik","Emam Ashour","Ahmed El-Sheikh"],
+  "Saudi Arabia":["Salem Al-Dawsari","Fahad Al-Muwallad","Firas Al-Buraikan","Hattan Bahebri","Sami Al-Najei","Saleh Al-Shehri","Abdulrahman Al-Aboud","Saud Abdulhamid","Ali Al-Bulaihi","Abdulelah Al-Amri","Mohammed Al-Breik","Hassan Tambakti","Sultan Al-Ghanam","Yasser Al-Shahrani","Mohammed Kanno","Nasser Al-Dawsari"],
+  "Uruguay":["Darwin Nunez","Luis Suarez","Facundo Torres","Federico Valverde","Rodrigo Bentancur","Matias Vecino","Nicolas De La Cruz","Nahitan Nandez","Jose Maria Gimenez","Ronald Araujo","Sebastian Coates","Mathias Olivera","Guillermo Varela","Matias Vina","Maximiliano Araújo","Brian Rodriguez","Facundo Pellistri","Edinson Cavani"],
+  "Iran":["Sardar Azmoun","Mehdi Taremi","Ali Gholizadeh","Saman Ghoddos","Allahyar Sayyadmanesh","Roozbeh Cheshmi","Milad Mohammadi","Ehsan Hajsafi","Morteza Pouraliganji","Majid Hosseini","Shoja Khalilzadeh","Ahmad Noorollahi","Omid Noorafkan","Karim Ansarifard","Mehdi Ghayedi","Saeid Ezatolahi"],
+  "New Zealand":["Chris Wood","Liberato Cacace","Marco Rojas","Elijah Just","Matthew Garbett","Marko Stamenic","Ryan Thomas","Logan Rogerson","Nando Pijnaker","Michael Boxall","Alex Greive","Tim Payne","Joe Bell","Clayton Lewis","Bill Tuiloma","Winston Reid","Ben Old","Deklan Wynne"],
+};
+
+const MATCHES = [
+  {id:'m1', day:'Thu Jun 12', h:'South Korea', a:'Czechia',    ko:'2026-06-12T02:00:00Z', pst:'Thu Jun 12 · 7:00 PM PST'},
+  {id:'m2', day:'Fri Jun 13', h:'Canada',      a:'Bosnia',     ko:'2026-06-13T19:00:00Z', pst:'Fri Jun 13 · 12:00 PM PST'},
+  {id:'m3', day:'Fri Jun 13', h:'USA',         a:'Paraguay',   ko:'2026-06-14T01:00:00Z', pst:'Fri Jun 13 · 6:00 PM PST'},
+  {id:'m4', day:'Sat Jun 14', h:'Qatar',       a:'Switzerland',ko:'2026-06-14T19:00:00Z', pst:'Sat Jun 14 · 12:00 PM PST'},
+  {id:'m5', day:'Sat Jun 14', h:'Brazil',      a:'Morocco',    ko:'2026-06-14T22:00:00Z', pst:'Sat Jun 14 · 3:00 PM PST'},
+  {id:'m6', day:'Sat Jun 14', h:'Haiti',       a:'Scotland',   ko:'2026-06-15T01:00:00Z', pst:'Sat Jun 14 · 6:00 PM PST'},
+  {id:'m7', day:'Sat Jun 14', h:'Australia',   a:'Turkiye',    ko:'2026-06-15T04:00:00Z', pst:'Sat Jun 14 · 9:00 PM PST'},
+  {id:'m8', day:'Sun Jun 15', h:'Germany',     a:'Curacao',    ko:'2026-06-15T17:00:00Z', pst:'Sun Jun 15 · 10:00 AM PST'},
+  {id:'m9', day:'Sun Jun 15', h:'Netherlands', a:'Japan',      ko:'2026-06-15T20:00:00Z', pst:'Sun Jun 15 · 1:00 PM PST'},
+  {id:'m10',day:'Sun Jun 15', h:'Ivory Coast', a:'Ecuador',    ko:'2026-06-15T23:00:00Z', pst:'Sun Jun 15 · 4:00 PM PST'},
+  {id:'m11',day:'Sun Jun 15', h:'Sweden',      a:'Tunisia',    ko:'2026-06-16T02:00:00Z', pst:'Sun Jun 15 · 7:00 PM PST'},
+];
+
+const PROPS = [
+  {id:'winner',    label:'Match Winner',                       type:'winner'},
+  {id:'score',     label:'Exact Final Score',                  type:'text', ph:'e.g. 2-1'},
+  {id:'first_g',   label:'First Goalscorer',                   type:'player', extra:'No Goalscorer'},
+  {id:'anytime_g', label:'Anytime Goalscorer',                 type:'player', extra:'No Goalscorer'},
+  {id:'ou',        label:'Total Goals Over / Under 2.5',       type:'yn2', opts:['Over 2.5','Under 2.5']},
+  {id:'first_t',   label:'First Team to Score',                type:'firstteam'},
+  {id:'red',       label:'Red Card Shown?',                    type:'yn2', opts:['Yes','No']},
+  {id:'first_c',   label:'First Player Carded (Yellow or Red)',type:'player', extra:'No Cards'},
+  {id:'g15',       label:'Goal in First 15 Minutes?',          type:'yn2', opts:['Yes','No']},
+  {id:'g80',       label:'Goal After 80th Minute?',            type:'yn2', opts:['Yes','No']},
+  {id:'pen',       label:'Penalty Awarded?',                   type:'yn2', opts:['Yes','No']},
+  {id:'var',       label:'VAR Decision Made?',                 type:'yn2', opts:['Yes','No']},
+  {id:'hat',       label:'Hat Trick Scored?',                  type:'yn2', opts:['Yes','No']},
+];
+
+// ─────────────────────────────────────────────────────────────
+// DB STATE
+// ─────────────────────────────────────────────────────────────
+let DB = { players:[], picks:[], results:[], gbGoals:{} };
+let ME = localStorage.getItem('wch_me') || null;
+let activeDay = 0;
+
+async function reload(){
+  const [pl,pk,rs,gb] = await Promise.all([
+    GET('players'), GET('picks'), GET('results'), GET('gb_goals')
+  ]);
+  DB.players = pl||[];
+  DB.picks   = pk||[];
+  DB.results = rs||[];
+  DB.gbGoals = {};
+  (gb||[]).forEach(r => DB.gbGoals[r.player_name] = r.goals);
+}
+
+// ─────────────────────────────────────────────────────────────
+// NAV
+// ─────────────────────────────────────────────────────────────
+const PAGES = ['home','lb','props','gb','admin'];
+function nav(id){
+  PAGES.forEach(p => {
+    document.getElementById('pg-'+p).classList.toggle('active', p===id);
+  });
+  document.querySelectorAll('nav button').forEach((b,i) => b.classList.toggle('active', PAGES[i]===id));
+  renderPage(id);
+}
+
+async function renderPage(id){
+  await reload();
+  if(id==='home')  renderDash();
+  if(id==='lb')    renderLB();
+  if(id==='props') renderProps();
+  if(id==='gb')    renderGB();
+  if(id==='admin') renderAdminContent();
+}
+
+// ─────────────────────────────────────────────────────────────
+// JOIN
+// ─────────────────────────────────────────────────────────────
+async function joinGame(){
+  const name = document.getElementById('join-input').value.trim();
+  if(!name){ alert('Please enter your name!'); return; }
+  await reload();
+  if(!DB.players.find(p=>p.name.toLowerCase()===name.toLowerCase())){
+    await POST('players',{name, gb_picks:[]});
+  }
+  setUser(name);
+  await reload();
+  showDash();
+}
+
+function returnUser(){
+  const name = prompt('Enter your name:');
+  if(!name) return;
+  reload().then(()=>{
+    const found = DB.players.find(p=>p.name.toLowerCase()===name.trim().toLowerCase());
+    if(!found){ alert('Name not found — please join first.'); return; }
+    setUser(found.name);
+    showDash();
+  });
+}
+
+function setUser(name){
+  ME = name;
+  localStorage.setItem('wch_me', name);
+  document.getElementById('hdr-sub').textContent = '👤 ' + name;
+}
+
+function showDash(){
+  document.getElementById('join-section').style.display = 'none';
+  document.getElementById('dash-section').style.display = 'block';
+  document.getElementById('dash-name-display').textContent = ME;
+  renderDash();
+}
+
+function renderDash(){
+  if(!ME || document.getElementById('dash-section').style.display==='none') return;
+  const total = scoreTotal(ME), props = scoreProps(ME), gb = scoreGB(ME);
+  const me = DB.players.find(p=>p.name===ME)||{};
+  document.getElementById('dash-stats').innerHTML = `
+    <div style="display:flex;gap:0;flex-wrap:wrap;border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      ${[['Total Pts',total,'var(--gold)'],['Prop Pts',props,'var(--blue)'],['GB Pts',gb,'var(--green)'],['GB Picks',(me.gb_picks||[]).length+'/4','var(--text)']].map(([l,v,c])=>`
+      <div style="flex:1;min-width:80px;padding:14px 10px;text-align:center;border-right:1px solid var(--border)">
+        <div style="font-size:1.45rem;font-weight:800;color:${c}">${v}</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:3px">${l}</div>
+      </div>`).join('')}
+    </div>`;
+  const myPicks = DB.picks.filter(p=>p.player_name===ME);
+  document.getElementById('dash-matches').innerHTML = MATCHES.map(m=>{
+    const locked = isLocked(m);
+    const hasPick = myPicks.find(p=>p.match_id===m.id);
+    const res = DB.results.find(r=>r.match_id===m.id);
+    let badge, bc;
+    if(res?.scored){ badge='✓ Scored'; bc='badge-gold'; }
+    else if(locked && hasPick){ badge='✓ Submitted'; bc='badge-green'; }
+    else if(locked){ badge='⏰ Missed'; bc='badge-red'; }
+    else { badge='Open'; bc='badge-blue'; }
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-size:.88rem;font-weight:600">${m.h} vs ${m.a}</div>
+        <div style="font-size:.73rem;color:var(--muted);margin-top:2px">${m.pst}</div>
+      </div>
+      <span class="badge ${bc}">${badge}</span>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────────────
+// PROPS
+// ─────────────────────────────────────────────────────────────
+function renderProps(){
+  const days = [...new Set(MATCHES.map(m=>m.day))];
+  document.getElementById('day-tabs').innerHTML = days.map((d,i)=>
+    `<button class="subtab ${i===activeDay?'active':''}" onclick="setDay(${i})">${d}</button>`
+  ).join('');
+  renderDayProps(days[activeDay]);
+}
+
+function setDay(i){ activeDay=i; renderProps(); }
+
+function renderDayProps(day){
+  if(!ME){ document.getElementById('props-body').innerHTML='<div class="info-box">Join the game on the Home tab to make picks.</div>'; return; }
+  const ms = MATCHES.filter(m=>m.day===day);
+  const myPicks = DB.picks.filter(p=>p.player_name===ME);
+  let html = '';
+  ms.forEach(m=>{
+    const locked = isLocked(m);
+    const myPick = myPicks.find(p=>p.match_id===m.id);
+    const res = DB.results.find(r=>r.match_id===m.id);
+    const scored = !!res?.scored;
+    const squad = [...(SQ[m.h]||[]), ...(SQ[m.a]||[])];
+    const sc = scored?'status-scored': locked?'status-locked':'status-open';
+    const sl = scored?'✓ Scored': locked?'🔒 Locked':'🟢 Open';
+
+    html += `<div class="card">
+      <div class="match-header">
+        <div>
+          <div class="match-title">${m.h} vs ${m.a}</div>
+          <div class="match-time">⏰ ${m.pst}</div>
+        </div>
+        <span class="match-status ${sc}">${sl}</span>
+      </div>`;
+
+    if(!locked && !myPick){
+      // INPUT FORM
+      html += `<div id="pf_${m.id}">`;
+      PROPS.forEach(p=>{
+        html += `<div class="prop-row"><div class="prop-q">${p.label}</div><div class="prop-sel">`;
+        if(p.type==='yn2')       html += sel(`pk_${m.id}_${p.id}`, p.opts);
+        else if(p.type==='winner')    html += sel(`pk_${m.id}_${p.id}`, [m.h+' Win','Draw',m.a+' Win']);
+        else if(p.type==='firstteam') html += sel(`pk_${m.id}_${p.id}`, [m.h,'Draw (0-0)',m.a]);
+        else if(p.type==='player')    html += playerSel(`pk_${m.id}_${p.id}`, squad, p.extra);
+        else html += `<input type="text" id="pk_${m.id}_${p.id}" placeholder="${p.ph||''}">`;
+        html += `</div></div>`;
+      });
+      html += `<div style="margin-top:18px"><button class="btn btn-gold" style="width:100%" onclick="submitProps('${m.id}')">🔒 Lock In My Picks</button></div></div>`;
+
+    } else if(myPick){
+      // MY PICKS + SCORING
+      const props = myPick.props||{};
+      const pts = scored ? calcMatchPts(ME, m.id) : null;
+      html += `<div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span class="badge badge-green">✓ Picks submitted</span>
+        ${pts!==null ? `<span class="badge badge-gold">+${pts} point${pts!==1?'s':''} this game</span>` : ''}
+      </div>`;
+      PROPS.forEach(p=>{
+        const v = props[p.id]||'—';
+        const ans = res?.answers?.[p.id];
+        const isRight = scored && ans && v.toLowerCase().trim()===ans.toLowerCase().trim();
+        const col = !scored ? 'var(--text)' : (isRight ? 'var(--green)' : 'var(--red)');
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:10px">
+          <span style="font-size:.82rem;color:var(--muted);flex:1">${p.label}</span>
+          <span style="font-size:.84rem;font-weight:600;color:${col};text-align:right">${v}${scored?' '+(isRight?'✓':'✗'):''}</span>
+        </div>`;
+      });
+
+      // Others' picks
+      const others = DB.picks.filter(pk=>pk.player_name!==ME && pk.match_id===m.id);
+      if(others.length){
+        html += `<div style="margin-top:18px">
+          <div style="font-size:.76rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Everyone else's picks</div>`;
+        others.forEach(op=>{
+          const ops = op.props||{};
+          html += `<div class="other-pick-card"><div class="other-pick-name">${op.player_name}</div>`;
+          PROPS.forEach(p=>{
+            html += `<div class="other-pick-row"><span class="other-pick-label">${p.label}</span><span class="other-pick-val">${ops[p.id]||'—'}</span></div>`;
+          });
+          html += `</div>`;
+        });
+        html += `</div>`;
+      }
+
+    } else {
+      html += `<div style="color:var(--muted);font-size:.85rem;padding:10px 0">This game was locked before you submitted picks.</div>`;
+    }
+    html += `</div>`;
+  });
+  document.getElementById('props-body').innerHTML = html || '<div class="loading">No matches this day.</div>';
+}
+
+function sel(id, opts){
+  return `<select id="${id}"><option value="">— pick —</option>${opts.map(o=>`<option>${o}</option>`).join('')}</select>`;
+}
+function playerSel(id, squad, extra){
+  const ex = extra ? `<option>${extra}</option>` : '';
+  return `<select id="${id}"><option value="">— pick —</option>${ex}${squad.map(p=>`<option>${p}</option>`).join('')}</select>`;
+}
+
+async function submitProps(matchId){
+  if(!ME){ alert('Join first!'); return; }
+  const props={};
+  PROPS.forEach(p=>{
+    const el=document.getElementById(`pk_${matchId}_${p.id}`);
+    props[p.id] = el ? el.value : '';
+  });
+  const existing = DB.picks.find(p=>p.player_name===ME && p.match_id===matchId);
+  if(existing){
+    await PATCH('picks',{props},`?player_name=eq.${encodeURIComponent(ME)}&match_id=eq.${matchId}`);
+  } else {
+    await POST('picks',{player_name:ME, match_id:matchId, props});
+  }
+  await reload();
+  renderProps();
+}
+
+// ─────────────────────────────────────────────────────────────
+// GOLDEN BOOT
+// ─────────────────────────────────────────────────────────────
+async function renderGB(){
+  await reload();
+  if(!ME){ document.getElementById('gb-mine').innerHTML='<div class="info-box">Join on the Home tab to make picks.</div>'; return; }
+  const me = DB.players.find(p=>p.name===ME)||{};
+  const picks = me.gb_picks||[];
+  const locked = isGBLocked();
+  let html = '';
+
+  if(!locked){
+    html += `<div style="margin-bottom:16px">
+      <label>Search & add a player (${picks.length}/4 selected)</label>
+      <div style="display:flex;gap:8px;margin-top:7px">
+        <select id="gb-sel" style="flex:1">
+          <option value="">— Select a player —</option>
+          ${GB_LIST.filter(p=>!picks.includes(p.n)).map(p=>`<option value="${p.n}">${p.n} · ${p.t} · ${p.m}x multiplier</option>`).join('')}
+        </select>
+        <button class="btn btn-gold" onclick="addGB()" ${picks.length>=4?'disabled':''}>Add</button>
+      </div>
+    </div>`;
+    if(picks.length){
+      picks.forEach(name=>{
+        const p=GB_LIST.find(x=>x.n===name);
+        html+=`<div class="gb-row">
+          <div class="gb-row-left">
+            <div class="gb-name">${name}</div>
+            <div class="gb-team">${p?.t||''}</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center">
+            <span class="gb-mult">${p?.m||1}x</span>
+            <button class="btn btn-outline btn-sm" onclick="removeGB('${name}')">Remove</button>
+          </div>
+        </div>`;
+      });
+      if(picks.length===4) html+=`<div class="success-box" style="margin-top:4px">✅ All 4 picks selected — they will lock automatically at 7:00 AM PST on Saturday.</div>`;
+    } else {
+      html += `<div style="color:var(--muted);font-size:.85rem;padding:8px 0">No picks yet — select up to 4 players above.</div>`;
+    }
+  } else {
+    if(!picks.length){
+      html='<div class="warn-box">Picks are locked — no picks were submitted in time.</div>';
+    } else {
+      html=`<div style="margin-bottom:12px"><span class="badge badge-green">✓ Picks locked</span></div>`;
+      let tot=0;
+      picks.forEach(name=>{
+        const p=GB_LIST.find(x=>x.n===name);
+        const goals=DB.gbGoals[name]||0;
+        const pts=Math.round(goals*(p?.m||1)*10)/10;
+        tot+=pts;
+        html+=`<div class="gb-row">
+          <div class="gb-row-left">
+            <div class="gb-name">${name}</div>
+            <div class="gb-team">${p?.t||''} · ${p?.m||1}x multiplier</div>
+          </div>
+          <div style="text-align:right">
+            <div class="gb-goals">${goals} ⚽</div>
+            <div class="gb-pts-sub">${pts} pts</div>
+          </div>
+        </div>`;
+      });
+      html+=`<div style="text-align:right;margin-top:6px;font-weight:700;color:var(--gold);font-size:.95rem">Total: ${Math.round(tot*10)/10} points</div>`;
+    }
+  }
+  document.getElementById('gb-mine').innerHTML = html;
+
+  // TRACKER
+  const tracked = Object.keys(DB.gbGoals).filter(n=>DB.gbGoals[n]>0).sort((a,b)=>DB.gbGoals[b]-DB.gbGoals[a]);
+  document.getElementById('gb-tracker').innerHTML = tracked.length
+    ? tracked.map(name=>{
+        const p=GB_LIST.find(x=>x.n===name);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div><span style="font-weight:600">${name}</span> <span style="font-size:.76rem;color:var(--muted)">${p?.t||''}</span></div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <span style="color:var(--green);font-weight:700;font-size:.95rem">${DB.gbGoals[name]} ⚽</span>
+            <span class="gb-mult">${p?.m||1}x</span>
+          </div>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--muted);font-size:.85rem;padding:10px 0">Goals will appear here as the tournament progresses.</div>';
+
+  // EVERYONE'S PICKS
+  const withPicks = DB.players.filter(p=>(p.gb_picks||[]).length>0);
+  document.getElementById('gb-all').innerHTML = withPicks.length
+    ? withPicks.map(p=>{
+        const pts = scoreGB(p.name);
+        return `<div style="padding:13px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+            <span style="font-weight:700">${p.name}</span>
+            <span class="badge badge-gold">${pts} pts</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${(p.gb_picks||[]).map(name=>{
+              const gp=GB_LIST.find(x=>x.n===name);
+              return `<span class="badge badge-muted">${name} · ${gp?.m||1}x</span>`;
+            }).join('')}
+          </div>
+        </div>`;
+      }).join('')
+    : '<div style="color:var(--muted);font-size:.85rem;padding:10px 0">No picks submitted yet.</div>';
+}
+
+async function addGB(){
+  const sel=document.getElementById('gb-sel');
+  if(!sel?.value) return;
+  const me=DB.players.find(p=>p.name===ME);
+  if(!me) return;
+  const picks=[...(me.gb_picks||[])];
+  if(picks.length>=4||picks.includes(sel.value)) return;
+  picks.push(sel.value);
+  await PATCH('players',{gb_picks:picks},`?name=eq.${encodeURIComponent(ME)}`);
+  await reload();
+  renderGB();
+}
+
+async function removeGB(name){
+  const me=DB.players.find(p=>p.name===ME);
+  if(!me) return;
+  const picks=(me.gb_picks||[]).filter(p=>p!==name);
+  await PATCH('players',{gb_picks:picks},`?name=eq.${encodeURIComponent(ME)}`);
+  await reload();
+  renderGB();
+}
+
+// ─────────────────────────────────────────────────────────────
+// SCORING
+// ─────────────────────────────────────────────────────────────
+function isLocked(m){ return Date.now() > new Date(m.ko).getTime(); }
+function isGBLocked(){ return Date.now() > new Date('2026-06-14T15:00:00Z').getTime(); }
+
+function calcMatchPts(user, matchId){
+  const pick = DB.picks.find(p=>p.player_name===user && p.match_id===matchId);
+  const res  = DB.results.find(r=>r.match_id===matchId);
+  if(!pick||!res?.scored||!res?.answers) return 0;
+  return PROPS.reduce((t,p)=>{
+    const v=(pick.props||{})[p.id]||'';
+    const a=res.answers[p.id]||'';
+    return t+(v&&a&&v.toLowerCase().trim()===a.toLowerCase().trim()?1:0);
+  },0);
+}
+
+function scoreProps(user){
+  return MATCHES.reduce((t,m)=>{
+    const r=DB.results.find(x=>x.match_id===m.id);
+    return r?.scored ? t+calcMatchPts(user,m.id) : t;
+  },0);
+}
+
+function scoreGB(user){
+  const me=DB.players.find(p=>p.name===user)||{};
+  return Math.round((me.gb_picks||[]).reduce((t,name)=>{
+    const p=GB_LIST.find(x=>x.n===name);
+    return t+(DB.gbGoals[name]||0)*(p?.m||1);
+  },0)*10)/10;
+}
+
+function scoreTotal(user){ return Math.round((scoreProps(user)+scoreGB(user))*10)/10; }
+
+// ─────────────────────────────────────────────────────────────
+// LEADERBOARD
+// ─────────────────────────────────────────────────────────────
+function renderLB(){
+  const list = DB.players
+    .map(p=>({name:p.name, total:scoreTotal(p.name), props:scoreProps(p.name), gb:scoreGB(p.name)}))
+    .sort((a,b)=>b.total-a.total);
+
+  const ri=['🥇','🥈','🥉'];
+  document.getElementById('lb-main').innerHTML = list.length
+    ? list.map((p,i)=>`<div class="lb-row">
+        <div class="lb-rank ${i<3?'r'+(i+1):''}">${ri[i]||(i+1)}</div>
+        <div class="lb-name">${p.name}${p.name===ME?' <span style="font-size:.7rem;color:var(--muted)">(you)</span>':''}</div>
+        <div style="text-align:right">
+          <div class="lb-pts">${p.total}</div>
+          <div class="lb-sub">Props: ${p.props} · GB: ${p.gb}</div>
+        </div>
+      </div>`).join('')
+    : '<div class="empty">No players yet.</div>';
+
+  document.getElementById('lb-props').innerHTML = [...list].sort((a,b)=>b.props-a.props)
+    .map((p,i)=>`<div class="lb-row"><div class="lb-rank">${i+1}</div><div class="lb-name">${p.name}</div><div class="lb-pts">${p.props}</div></div>`).join('') || '<div class="empty">—</div>';
+
+  document.getElementById('lb-gb').innerHTML = [...list].sort((a,b)=>b.gb-a.gb)
+    .map((p,i)=>`<div class="lb-row"><div class="lb-rank">${i+1}</div><div class="lb-name">${p.name}</div><div class="lb-pts">${p.gb}</div></div>`).join('') || '<div class="empty">—</div>';
+}
+
+// ─────────────────────────────────────────────────────────────
+// ADMIN
+// ─────────────────────────────────────────────────────────────
+function checkAdmin(){
+  if(document.getElementById('admin-pw').value===ADMIN_PW){
+    document.getElementById('admin-body').style.display='block';
+    renderAdminContent();
+  } else { alert('Wrong password.'); }
+}
+
+function renderAdminContent(){
+  if(document.getElementById('admin-body').style.display==='none') return;
+  // GB
+  let gbHtml = '<div class="info-box">Enter cumulative goals for each player. Multipliers apply automatically to scoring.</div>';
+  GB_LIST.forEach(p=>{
+    const g = DB.gbGoals[p.n]||0;
+    const safe = p.n.replace(/[^a-zA-Z0-9]/g,'_');
+    gbHtml+=`<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1;font-size:.84rem">${p.n} <span style="color:var(--muted);font-size:.73rem">${p.t} · ${p.m}x</span></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="number" min="0" max="20" value="${g}" style="width:68px;text-align:center" id="gbg_${safe}" onchange="saveGBGoal('${p.n}',this.value)">
+        <span style="color:var(--green);font-size:.82rem">⚽</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('adm-gb').innerHTML = gbHtml;
+
+  // MATCHES
+  let mHtml = '';
+  MATCHES.forEach(m=>{
+    const res = DB.results.find(r=>r.match_id===m.id)||{};
+    const squad = [...(SQ[m.h]||[]),...(SQ[m.a]||[])];
+    mHtml+=`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:10px">
+        <div>
+          <div style="font-weight:700;font-size:.95rem">${m.h} vs ${m.a}</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:3px">${m.pst}</div>
+        </div>
+        <span class="badge ${res.scored?'badge-green':'badge-gold'}">${res.scored?'✓ Scored':'Pending'}</span>
+      </div>
+      <div class="form-row">
+        <label>ESPN Box Score URL (optional reference)</label>
+        <div class="url-row">
+          <input type="text" id="url_${m.id}" placeholder="https://www.espn.com/soccer/..." value="${res.url||''}">
+          <button class="btn btn-outline btn-sm" onclick="saveURL('${m.id}')">Save</button>
+        </div>
+      </div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px;font-weight:500">Enter correct answers for each prop:</div>`;
+
+    PROPS.forEach(p=>{
+      const saved=(res.answers||{})[p.id]||'';
+      mHtml+=`<div class="res-row"><div class="res-label">${p.label}</div>`;
+      if(p.type==='yn2')        mHtml+=resSel(`ans_${m.id}_${p.id}`,p.opts,saved,m.id,p.id);
+      else if(p.type==='winner')     mHtml+=resSel(`ans_${m.id}_${p.id}`,[m.h+' Win','Draw',m.a+' Win'],saved,m.id,p.id);
+      else if(p.type==='firstteam')  mHtml+=resSel(`ans_${m.id}_${p.id}`,[m.h,'Draw (0-0)',m.a],saved,m.id,p.id);
+      else if(p.type==='player')     mHtml+=resPlayerSel(`ans_${m.id}_${p.id}`,squad,p.extra,saved,m.id,p.id);
+      else mHtml+=`<input type="text" class="res-input" id="ans_${m.id}_${p.id}" value="${saved}" placeholder="${p.ph||''}" onchange="queueAns('${m.id}','${p.id}',this.value)">`;
+      mHtml+=`</div>`;
+    });
+
+    mHtml+=`<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn btn-green" onclick="markScored('${m.id}')">✓ Mark Scored & Update Leaderboard</button>
+      <button class="btn btn-outline btn-sm" onclick="clearRes('${m.id}')">Clear Results</button>
+    </div></div>`;
+  });
+  document.getElementById('adm-matches').innerHTML = mHtml;
+}
+
+function resSel(id, opts, saved, mId, pId){
+  return `<select class="res-input" id="${id}" onchange="queueAns('${mId}','${pId}',this.value)">
+    <option value="">--</option>${opts.map(o=>`<option ${saved===o?'selected':''}>${o}</option>`).join('')}
+  </select>`;
+}
+function resPlayerSel(id, squad, extra, saved, mId, pId){
+  const ex = extra?`<option ${saved===extra?'selected':''}>${extra}</option>`:'';
+  return `<select class="res-input" id="${id}" onchange="queueAns('${mId}','${pId}',this.value)">
+    <option value="">--</option>${ex}${squad.map(p=>`<option ${saved===p?'selected':''}>${p}</option>`).join('')}
+  </select>`;
+}
+
+const Q = {}; // queued answers before marking scored
+function queueAns(mId, pId, val){ if(!Q[mId]) Q[mId]={}; Q[mId][pId]=val; }
+
+async function saveGBGoal(name, val){
+  const goals = parseFloat(val)||0;
+  const existing = await GET('gb_goals',`?player_name=eq.${encodeURIComponent(name)}`);
+  if(existing?.length) await PATCH('gb_goals',{goals},`?player_name=eq.${encodeURIComponent(name)}`);
+  else await POST('gb_goals',{player_name:name, goals});
+  await reload();
+}
+
+async function saveURL(mId){
+  const url = document.getElementById(`url_${mId}`)?.value||'';
+  const ex = DB.results.find(r=>r.match_id===mId);
+  if(ex) await PATCH('results',{url},`?match_id=eq.${mId}`);
+  else await POST('results',{match_id:mId, answers:{}, scored:false, url});
+  await reload();
+  alert('URL saved ✅');
+}
+
+async function markScored(mId){
+  // Collect all answers from DOM + queue
+  const answers = {};
+  const res = DB.results.find(r=>r.match_id===mId)||{};
+  Object.assign(answers, res.answers||{}, Q[mId]||{});
+  PROPS.forEach(p=>{
+    const el = document.getElementById(`ans_${mId}_${p.id}`);
+    if(el?.value) answers[p.id] = el.value;
+  });
+  const ex = DB.results.find(r=>r.match_id===mId);
+  if(ex) await PATCH('results',{answers, scored:true},`?match_id=eq.${mId}`);
+  else await POST('results',{match_id:mId, answers, scored:true});
+  delete Q[mId];
+  await reload();
+  alert('✅ Match scored! Leaderboard updated for all players.');
+  renderAdminContent();
+}
+
+async function clearRes(mId){
+  if(!confirm('Clear all results for this match?')) return;
+  await PATCH('results',{answers:{}, scored:false},`?match_id=eq.${mId}`);
+  await reload();
+  renderAdminContent();
+}
+
+// ─────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────
+(async()=>{
+  await reload();
+  if(ME){
+    const found = DB.players.find(p=>p.name===ME);
+    if(found){
+      document.getElementById('hdr-sub').textContent = '👤 ' + ME;
+      showDash();
+    } else {
+      ME = null;
+      localStorage.removeItem('wch_me');
+    }
+  }
+})();
+</script>
+</body>
+</html>
